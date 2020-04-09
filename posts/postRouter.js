@@ -2,7 +2,8 @@ const express = require('express');
 const Posts = require('./postDb');
 const router = express.Router();
 
-// handle every request that begins with /api/posts
+// /api/posts
+
 router.get('/', (req, res) => { 
   Posts.get(req.query)
     .then( posts => {
