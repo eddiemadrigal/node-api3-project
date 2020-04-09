@@ -15,7 +15,7 @@ router.get('/', (req, res) => {
     });
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', validateUserId, (req, res) => {
   Users.getById(req.params.id)
     .then( user => {
       if ( user ) {
@@ -112,7 +112,23 @@ router.put('/:id', (req, res) => {
 //custom middleware
 
 function validateUserId(req, res, next) {
-  // do your magic!
+  Users.getById(req.params.id)
+    .then( user => {
+      if ( user ) {
+        // res.status(200).json(user);
+        req.user = user;
+      } else {
+        res.status(400).json({ message: "Invalid user ID." });
+      }
+    })
+    .catch( err => {
+      console.log( err );
+      res.status(500).json({
+        message: 'Error retrieving the specific user.'
+      });
+    });
+
+    next();
 }
 
 function validateUser(req, res, next) {
