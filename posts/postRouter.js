@@ -17,7 +17,7 @@ router.get('/', (req, res) => {
     });
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', validatePostId, (req, res) => {
   Posts.getById(req.params.id)
     .then( post => {
       if ( post ) {
@@ -34,7 +34,7 @@ router.get('/:id', (req, res) => {
     });
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', validateUserId, (req, res) => {
   const id = req.params.id;
 
   Posts.remove(id)
@@ -51,7 +51,7 @@ router.delete('/:id', (req, res) => {
     })
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', validateUserId, (req, res) => {
   const changes = req.body
 
   Posts.update(req.params.id, changes)
@@ -77,8 +77,38 @@ router.put('/:id', (req, res) => {
 
 // custom middleware
 
+function validateUserId(req, res, next) {
+  Users.getById(req.params.id)
+    .then( user => {
+      if ( user ) {
+        // res.status(200).json(user);
+        req.user = user;
+      } else {
+        res.status(400).json({ message: "Invalid user ID." });
+      }
+    })
+    .catch( err => {
+      console.log( err );
+      res.status(500).json({
+        message: 'Error retrieving the specific user.'
+      });
+    });
+
+    next();
+}
+
 function validatePostId(req, res, next) {
-  // do your magic!
+  if (req.body !== "" && req.body.text !== "") {
+    next();
+  } else if (req.body === "") {
+    res.status(400).json({
+      message: 'missing post data.'
+    })
+  } else {
+    res.status(400).json({
+      message: 'missing required text field'
+    })
+  }
 }
 
 module.exports = router;

@@ -32,7 +32,7 @@ router.get('/:id', validateUserId, (req, res) => {
     });
 });
 
-router.post('/', (req, res) => {
+router.post('/', validateUser, (req, res) => {
   Users.insert(req.body)
     .then( user => {
       res.status(200).json( user )
@@ -44,7 +44,7 @@ router.post('/', (req, res) => {
     })
 });
 
-router.get('/:id/posts', (req, res) => {
+router.get('/:id/posts', validateUserId, (req, res) => {
   const user_id = req.params.id;
   Users.getUserPosts(user_id)
     .then( posts => {
@@ -63,7 +63,7 @@ router.get('/:id/posts', (req, res) => {
     });
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', validateUserId, (req, res) => {
   const id = req.params.id;
 
   Users.remove(id)
@@ -80,7 +80,7 @@ router.delete('/:id', (req, res) => {
     })
 });
 
-router.post('/:id/posts', (req, res) => {
+router.post('/:id/posts', validateUserId, validateUser, validatePost, (req, res) => {
   Users.insert(req.body)
     .then( post => {
       res.status(201).json( post )
@@ -92,7 +92,7 @@ router.post('/:id/posts', (req, res) => {
     });
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', validateUserId, validateUser, (req, res) => {
   const changes = req.body;
   Users.update(req.params.id, changes)
     .then( user => {
@@ -132,11 +132,31 @@ function validateUserId(req, res, next) {
 }
 
 function validateUser(req, res, next) {
-  // do your magic!
+  if (req.body !== "" && req.body.name !== "") {
+    next();
+  } else if (req.body === "") {
+    res.status(400).json({
+      message: 'missing user data.'
+    })
+  } else {
+    res.status(400).json({
+      message: 'missing required name field'
+    })
+  }
 }
 
 function validatePost(req, res, next) {
-  // do your magic!
+  if (req.body !== "" && req.body.text !== "") {
+    next();
+  } else if (req.body === "") {
+    res.status(400).json({
+      message: 'missing post data.'
+    })
+  } else {
+    res.status(400).json({
+      message: 'missing required text field'
+    })
+  }
 }
 
 module.exports = router;
